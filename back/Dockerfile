@@ -20,4 +20,4 @@ COPY . .
 EXPOSE 3001
 
 # Comando para iniciar a aplicação
-CMD ["sh", "-c", "sleep 90 && npm start"]
+CMD ["sh", "-c", "sleep 30 && npm start"]

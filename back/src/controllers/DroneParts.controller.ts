@@ -132,6 +132,14 @@ class DronePartsController {
     const { companyId } = user;
     const pool = await DB();
 
+    if (quantity < 0) {
+      return ErrorHandler.Unauthorized(
+        "Quantity must be greater than or equal to 0",
+        "Error creating drone part",
+        next
+      );
+    }
+
     try {
       const result = await pool
         .request()
@@ -210,6 +218,14 @@ class DronePartsController {
     const { companyId } = user;
     const pool = await DB();
 
+    if (quantity < 0) {
+      return ErrorHandler.Unauthorized(
+        "Quantity must be greater than or equal to 0",
+        "Error creating drone part",
+        next
+      );
+    }
+
     try {
       const result = await pool
         .request()
@@ -286,6 +302,14 @@ class DronePartsController {
     const { name, quantity } = req.body;
     const { companyId } = user;
     const pool = await DB();
+
+    if (quantity < 0) {
+      return ErrorHandler.Unauthorized(
+        "Quantity must be greater than or equal to 0",
+        "Error creating drone part",
+        next
+      );
+    }
 
     try {
       const result = await pool

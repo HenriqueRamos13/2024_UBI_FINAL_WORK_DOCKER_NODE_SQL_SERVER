@@ -2,9 +2,13 @@ How to run the project.
 
 docker-compose up --build -d
 
+Maybe u should run npm install inside back and front folder first
+
 OpenAPI Docs url (swagger file automatic generated):
 
 /api-docs
+
+IGNORE \/ \/
 
 INFOS:
 https://kubernetes.io/docs/tasks/tools/install-kubectl-macos/
