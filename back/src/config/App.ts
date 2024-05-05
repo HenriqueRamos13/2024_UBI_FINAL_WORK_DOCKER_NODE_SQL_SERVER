@@ -18,7 +18,7 @@ import cookieParser = require("cookie-parser");
 
 class App {
   public app: express.Application;
-  private corsWhitelist: string[] = ["http://127.0.0.1"];
+  private corsWhitelist: string | string[] = ["http://front:3000"];
 
   constructor() {
     console.log("Starting server...");

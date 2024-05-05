@@ -16,7 +16,7 @@ services:
           cpus: "0.5"
           memory: "1GB"
 
-  app:
+  back:
     build: ./back
     ports:
       - "3001:3001"
@@ -35,3 +35,17 @@ services:
         limits:
           cpus: "0.5"
           memory: "1GB"
+
+  front:
+    container_name: nextjs-app
+    restart: unless-stopped
+    environment:
+      - NEXT_PUBLIC_TEST_ENV=development
+      - NODE_ENV=development
+    build: ./front
+    volumes:
+      - ./front:/app
+      - /app/node_modules
+      - /app/.next
+    ports:
+      - 3000:3000
