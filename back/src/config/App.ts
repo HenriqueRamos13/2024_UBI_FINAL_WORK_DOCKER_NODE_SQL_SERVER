@@ -14,11 +14,16 @@ import SessionController from "../controllers/Session.controller";
 import { route } from "../utils/decorators/Route.decorator";
 import SqlServer from "./db/SqlServer";
 import TestController from "../controllers/Test.controller";
+import * as swaggerUI from "swagger-ui-express";
+const swaggerJson = require("../../swagger.docs.json");
 import cookieParser = require("cookie-parser");
 
 class App {
   public app: express.Application;
-  private corsWhitelist: string | string[] = ["http://front:3000"];
+  private corsWhitelist: string | string[] = [
+    "http://front:3000",
+    "http://front-service:3000",
+  ];
 
   constructor() {
     console.log("Starting server...");
@@ -46,6 +51,7 @@ class App {
     new SessionController();
 
     this.app.use(route);
+    this.app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(swaggerJson));
     this.app.use((err, req, res, next) => {
       const status = err.status || 500;
       const message = err.message || "Something went wrong!";
@@ -99,8 +105,8 @@ class App {
   }
 
   public start(): void {
-    this.app.listen(process.env.PORT || 3001, () =>
-      console.log("Server started! on Port: " + (process.env.PORT || "3001"))
+    this.app.listen(process.env.PORT || 3000, () =>
+      console.log("Server started! on Port: " + (process.env.PORT || "3000"))
     );
   }
 

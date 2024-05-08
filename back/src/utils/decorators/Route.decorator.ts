@@ -1,40 +1,62 @@
 import { Request, Response, Router, NextFunction } from "express";
 import METHOD from "../enums/methods.enum";
+import "dotenv/config";
 
 interface RouteConfigProps {
   method: METHOD;
   path: string;
+  id?: number;
 }
 
 const route = Router();
 
-function routeConfig({ method, path }: RouteConfigProps): MethodDecorator {
+function routeConfig({
+  method,
+  path,
+  id = 1,
+}: RouteConfigProps): MethodDecorator {
   return function (
     target: any,
     propertyKey: string | symbol,
     descriptor: PropertyDescriptor
   ) {
-    // Adicionando NextFunction ao handler da rota
+    if (id !== Number(process.env.MICROSSERVICE_ID)) {
+      return;
+    }
+
+    console.log(`Configuring route ${method} ${path}`);
+    // Modificação para passar um objeto unificado para a função original
     const response = async (
       req: Request,
       res: Response,
       next: NextFunction
     ) => {
+      const args = {
+        req,
+        res,
+        next,
+        query: req.query,
+        body: req.body,
+        params: req.params,
+        user: req.user,
+        noToken: req.noToken,
+      };
+
       try {
-        // Chamando a função original e passando 'next' como argumento
-        const original = await descriptor.value(req, res, next);
+        // Chamando a função original com um objeto contendo todos os argumentos
+        const original = await descriptor.value(args);
         if (original !== undefined) {
           res.status(200).json(original);
+        } else {
+          // Se não houver resposta, assume-se que o 'next' foi chamado
+          next();
         }
-        // Se 'original' não enviar uma resposta, não fazemos nada aqui
-        // pois assumimos que 'next' foi chamado dentro de 'descriptor.value'
       } catch (error: any) {
-        // Usando 'next' para passar erros para o middleware de erro
         next(error);
       }
     };
 
-    // Registrando o handler na rota especificada
+    // Registrando o handler modificado na rota especificada
     route[method](path, response);
   };
 }

@@ -4,7 +4,6 @@ GO
 USE [database];
 GO
 
--- Creating USER table
 CREATE TABLE [user] (
     id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
     name NVARCHAR(255) NOT NULL,
@@ -18,7 +17,6 @@ CREATE TABLE [user] (
 );
 GO
 
--- Creating USER_PROJECTS table
 CREATE TABLE user_projects (
     id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
     userId UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES [user](id),
@@ -28,7 +26,6 @@ CREATE TABLE user_projects (
 );
 GO
 
--- Creating PROJECT table
 CREATE TABLE project (
     id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
     type NVARCHAR(50) NOT NULL CHECK (type IN ('intern', 'funded', 'contract')),
@@ -44,7 +41,6 @@ CREATE TABLE project (
 );
 GO
 
--- Creating PROJECT_INFOS table
 CREATE TABLE project_infos (
     id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
     projectId UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES project(id),
@@ -52,7 +48,6 @@ CREATE TABLE project_infos (
 );
 GO
 
--- Creating PROJECT_INFO table
 CREATE TABLE project_info (
     id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
     language NVARCHAR(50) NOT NULL CHECK (language IN ('pt', 'en')),
@@ -62,7 +57,6 @@ CREATE TABLE project_info (
 );
 GO
 
--- Creating PROJECT_KEYWORDS table
 CREATE TABLE project_keywords (
     id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
     projectId UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES project(id),
@@ -70,14 +64,12 @@ CREATE TABLE project_keywords (
 );
 GO
 
--- Creating KEYWORDS table
 CREATE TABLE keywords (
     id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
     name NVARCHAR(255) NOT NULL
 );
 GO
 
--- Creating PROJECT_SCIENTIFIC_DOMAINS table
 CREATE TABLE project_scientific_domains (
     id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
     projectId UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES project(id),
@@ -85,14 +77,12 @@ CREATE TABLE project_scientific_domains (
 );
 GO
 
--- Creating SCIENTIFIC_DOMAIN table
 CREATE TABLE cientific_domain (
     id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
     name NVARCHAR(255) NOT NULL
 );
 GO
 
--- Creating PROJECT_SCIENTIFIC_AREAS table
 CREATE TABLE project_scientific_areas (
     id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
     projectId UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES project(id),
@@ -100,7 +90,6 @@ CREATE TABLE project_scientific_areas (
 );
 GO
 
--- Creating SCIENTIFIC_AREA table
 CREATE TABLE cientific_area (
     id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
     name NVARCHAR(255) NOT NULL,
@@ -108,7 +97,6 @@ CREATE TABLE cientific_area (
 );
 GO
 
--- Creating ENTITY table
 CREATE TABLE entity (
     id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
     name NVARCHAR(255) NOT NULL,
@@ -120,7 +108,6 @@ CREATE TABLE entity (
 );
 GO
 
--- Creating ENTITY_CONTACT_POINTS table
 CREATE TABLE entity_contact_points (
     id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
     contactPointId UNIQUEIDENTIFIER NOT NULL,
@@ -128,14 +115,12 @@ CREATE TABLE entity_contact_points (
 );
 GO
 
--- Creating CONTACT_POINT table
 CREATE TABLE contact_point (
     id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
     role NVARCHAR(255) NOT NULL
 );
 GO
 
--- Creating CONTACT_POINT_INFO table
 CREATE TABLE contact_point_info (
     id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
     contactPointId UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES contact_point(id),
@@ -146,7 +131,6 @@ CREATE TABLE contact_point_info (
 );
 GO
 
--- Creating FUNDING table
 CREATE TABLE funding (
     id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
     isIntern BIT NOT NULL,
@@ -154,7 +138,6 @@ CREATE TABLE funding (
 );
 GO
 
--- Creating ENTITY_FUNDINGS table
 CREATE TABLE entity_fundings (
     id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
     entityId UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES entity(id),
@@ -162,14 +145,12 @@ CREATE TABLE entity_fundings (
 );
 GO
 
--- Creating PROGRAM table
 CREATE TABLE program (
     id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
     name NVARCHAR(255) NOT NULL
 );
 GO
 
--- Creating PROGRAMS_FUNDINGS table
 CREATE TABLE programs_fundings (
     id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
     programId UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES program(id),
@@ -177,9 +158,33 @@ CREATE TABLE programs_fundings (
 );
 GO
 
--- Creating PROJECT_FUNDINGS table
 CREATE TABLE project_fundings (
     projectId UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES project(id),
     fundingId UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES funding(id)
+);
+GO
+
+
+-- Programaçao no servidor
+
+CREATE TABLE drone_parts (
+    id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+    name NVARCHAR(255) NOT NULL,
+    quantity INT NOT NULL DEFAULT 0
+);
+GO
+
+CREATE TABLE drone (
+    id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+    user_id UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES [user](id),
+    finish BIT NOT NULL DEFAULT 0,  -- Usando BIT para boolean
+    created_at DATE NOT NULL
+);
+GO
+
+CREATE TABLE drone_has_parts (
+    part_id UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES drone_parts(id),
+    drone_id UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES drone(id),
+    PRIMARY KEY (part_id, drone_id)
 );
 GO

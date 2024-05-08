@@ -1,17 +1,21 @@
-import { Request, Response } from "express";
 import { routeConfig } from "../utils/decorators/Route.decorator";
 import METHOD from "../utils/enums/methods.enum";
 import { Public } from "../utils/decorators/Public.decorator";
+import "dotenv/config";
+import { RequestParams } from "../types";
 import { Roles } from "../utils/decorators/Roles.decorator";
 import { Role } from "../utils/enums/Roles.enum";
+
+const CONTROLLER_MICROSSSERVICE_ID = 1;
 
 class TestController {
   @routeConfig({
     method: METHOD.GET,
     path: "/test",
+    id: CONTROLLER_MICROSSSERVICE_ID,
   })
   @Roles(Role.USER)
-  public get(req: Request, res: Response): void {
+  public get({ req, res, user, noToken }: RequestParams): void {
     res.json({
       message: "GET",
     });
@@ -20,9 +24,10 @@ class TestController {
   @routeConfig({
     method: METHOD.POST,
     path: "/test",
+    id: CONTROLLER_MICROSSSERVICE_ID,
   })
   @Public()
-  public post(req: Request, res: Response, next): void {
+  public post({ req, res }: RequestParams): void {
     res.json({
       message: "POST",
     });
@@ -31,8 +36,9 @@ class TestController {
   @routeConfig({
     method: METHOD.PUT,
     path: "/test",
+    id: CONTROLLER_MICROSSSERVICE_ID,
   })
-  public put(req: Request, res: Response): void {
+  public put({ req, res }: RequestParams): void {
     res.json({
       message: "PUT",
     });
@@ -41,8 +47,9 @@ class TestController {
   @routeConfig({
     method: METHOD.PATCH,
     path: "/test",
+    id: CONTROLLER_MICROSSSERVICE_ID,
   })
-  public patch(req: Request, res: Response): void {
+  public patch({ req, res }: RequestParams): void {
     res.json({
       message: "PATCH",
     });
@@ -51,8 +58,9 @@ class TestController {
   @routeConfig({
     method: METHOD.DELETE,
     path: "/test",
+    id: CONTROLLER_MICROSSSERVICE_ID,
   })
-  public delete(req: Request, res: Response): void {
+  public delete({ req, res }: RequestParams): void {
     res.json({
       message: "DELETE",
     });

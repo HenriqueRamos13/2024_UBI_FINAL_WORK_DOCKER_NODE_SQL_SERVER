@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: back
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: back
+  template:
+    metadata:
+      labels:
+        app: back
+    spec:
+      containers:
+        - name: back
+          image: hramos13/ubi-final-project-back
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
+              name: webinterface
+          env:
+            - name: DB_HOST
+              value: sqlserver-service
+            - name: DB_USER
+              value: sa
+            - name: DB_PASS
+              value: password123!
+            - name: DB_NAME
+              value: database
+            - name: JWT_TOKEN
+              value: secret
+            - name: MICROSSERVICE_ID
+              value: "1"
+          imagePullPolicy: Always
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: back-service
+spec:
+  type: NodePort
+  ports:
+    - protocol: TCP
+      port: 3000
+      name: webinterface
+  selector:
+    app: back
