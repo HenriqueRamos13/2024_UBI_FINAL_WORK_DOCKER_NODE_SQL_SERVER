@@ -16,17 +16,6 @@ class AuthController {
   public post({ req, res, next }: RequestParams): void {
     return new PassportController().signup(req, res, next);
   }
-
-  @routeConfig({
-    method: METHOD.DELETE,
-    path: "/auth",
-    id: CONTROLLER_MICROSSSERVICE_ID,
-  })
-  public delete({ req, res }: RequestParams): void {
-    res.json({
-      message: "DELETE",
-    });
-  }
 }
 
 export default AuthController;
