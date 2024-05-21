@@ -1,5 +1,6 @@
 import { Request, Response, Router, NextFunction } from "express";
 import METHOD from "../enums/methods.enum";
+import "reflect-metadata";
 import "dotenv/config";
 
 interface RouteConfigProps {
@@ -43,12 +44,10 @@ function routeConfig({
       };
 
       try {
-        // Chamando a função original com um objeto contendo todos os argumentos
         const original = await descriptor.value(args);
         if (original !== undefined) {
           res.status(200).json(original);
         } else {
-          // Se não houver resposta, assume-se que o 'next' foi chamado
           next();
         }
       } catch (error: any) {
@@ -58,6 +57,12 @@ function routeConfig({
 
     // Registrando o handler modificado na rota especificada
     route[method](path, response);
+
+    // Adicionando metadados para o Swagger
+    const swaggerMetadata =
+      Reflect.getMetadata("swagger", target.constructor) || [];
+    swaggerMetadata.push({ method, path, handler: descriptor.value });
+    Reflect.defineMetadata("swagger", swaggerMetadata, target.constructor);
   };
 }
 

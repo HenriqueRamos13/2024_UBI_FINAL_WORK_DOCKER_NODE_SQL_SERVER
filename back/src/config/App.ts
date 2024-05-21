@@ -1,18 +1,18 @@
+import "reflect-metadata";
+import { setupSwagger } from "../swagger";
 import express = require("express");
 import bodyParser = require("body-parser");
 import cors = require("cors");
 import hpp = require("hpp");
 // import xss = require("xss-clean");
 import helmet from "helmet";
-import { Sanitize } from "../utils/functions/sanitize";
 import rateLimit from "express-rate-limit";
 import { AuthMiddleware } from "../utils/middlewares/auth";
 import TEXTS from "../utils/Texts";
 import "dotenv/config";
 import { route } from "../utils/decorators/Route.decorator";
 import SqlServer from "./db/SqlServer";
-import * as swaggerUI from "swagger-ui-express";
-const swaggerJson = require("../../swagger.docs.json");
+import { Sanitize } from "../utils/functions/sanitize";
 import cookieParser = require("cookie-parser");
 
 import TestController from "../controllers/Test.controller";
@@ -43,7 +43,7 @@ import DronePartsController from "../controllers/DroneParts.controller";
 import DroneHasPartsController from "../controllers/DroneHasParts.controller";
 
 class App {
-  public app: express.Application;
+  public app: any;
   private corsWhitelist: string | string[] = [
     "http://front:3000",
     "http://front-service:3000",
@@ -63,7 +63,6 @@ class App {
   private connectDatabases(): void {
     console.log("Connecting to databases...");
 
-    // new Mongo();
     new SqlServer(this.app);
   }
 
@@ -98,7 +97,7 @@ class App {
     new DroneHasPartsController();
 
     this.app.use(route);
-    this.app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(swaggerJson));
+    setupSwagger(this.app);
     this.app.use((err, req, res, next) => {
       const status = err.status || 500;
       const message = err.message || "Something went wrong!";
@@ -152,8 +151,8 @@ class App {
   }
 
   public start(): void {
-    this.app.listen(process.env.PORT || 3000, () =>
-      console.log("Server started! on Port: " + (process.env.PORT || "3000"))
+    this.app.listen(process.env.PORT || 3001, () =>
+      console.log("Server started! on Port: " + (process.env.PORT || 3001))
     );
   }
 

@@ -1,12 +1,26 @@
 import { routeConfig } from "../utils/decorators/Route.decorator";
 import METHOD from "../utils/enums/methods.enum";
-import PassportController from "./Passport.controller";
 import { Public } from "../utils/decorators/Public.decorator";
 import { RequestParams } from "../types";
 
 const CONTROLLER_MICROSSERVICE_ID = 1;
 
 class DroneController {
+  /**
+   * @swagger
+   * /drone:
+   *   get:
+   *     summary: Retrieve a list of drones
+   *     responses:
+   *       200:
+   *         description: A list of drones
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: array
+   *               items:
+   *                 type: object
+   */
   @routeConfig({
     method: METHOD.GET,
     path: "/drone",
@@ -17,6 +31,59 @@ class DroneController {
     res.json({ message: "GET" });
   }
 
+  /**
+   * @swagger
+   * /drone:
+   *   post:
+   *     summary: Create a new drone
+   *     parameters:
+   *       - in: query
+   *         name: owner
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: The owner of the drone
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: The drone ID
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             properties:
+   *               name:
+   *                 type: string
+   *               model:
+   *                 type: string
+   *               serialNumber:
+   *                 type: string
+   *             required:
+   *               - name
+   *               - model
+   *     responses:
+   *       201:
+   *         description: The created drone
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 id:
+   *                   type: string
+   *                 name:
+   *                   type: string
+   *                 model:
+   *                   type: string
+   *                 serialNumber:
+   *                   type: string
+   *                 owner:
+   *                   type: string
+   */
   @routeConfig({
     method: METHOD.POST,
     path: "/drone",

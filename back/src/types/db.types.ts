@@ -1,4 +1,5 @@
-export type TypeUser = {
+// User type
+type UserType = {
   id: string;
   name: string;
   email: string;
@@ -10,21 +11,23 @@ export type TypeUser = {
   recoverPasswordToken?: string;
 };
 
-export type TypeUserProjects = {
+// User Projects type
+type UserProjectType = {
   id: string;
   userId: string;
   projectId: string;
   role: "responsible" | "promotor" | "copromotor" | "leader" | "participant";
-  allocatedTime: number;
+  alocatedTime: number;
 };
 
-export type TypeProject = {
+// Project type
+type ProjectType = {
   id: string;
   type: "intern" | "funded" | "contract";
   status:
     | "approved"
     | "canceled"
-    | "finished"
+    | "finishied"
     | "ongoing"
     | "closed"
     | "renovated"
@@ -34,18 +37,20 @@ export type TypeProject = {
   isIntern: boolean;
   url?: string;
   doi?: string;
-  startDate?: Date;
-  finishDate?: Date;
+  startDate?: string; // Date in ISO format
+  finishDate?: string; // Date in ISO format
   cost: number;
 };
 
-export type TypeProjectInfos = {
+// Project Infos type
+type ProjectInfoType = {
   id: string;
   projectId: string;
   projectInfoId: string;
 };
 
-export type TypeProjectInfo = {
+// Project Info type
+type ProjectInfoDetailType = {
   id: string;
   language: "pt" | "en";
   name: string;
@@ -53,41 +58,48 @@ export type TypeProjectInfo = {
   description?: string;
 };
 
-export type TypeProjectKeywords = {
+// Project Keywords type
+type ProjectKeywordType = {
   id: string;
   projectId: string;
   keywordId: string;
 };
 
-export type TypeKeywords = {
+// Keyword type
+type KeywordType = {
   id: string;
   name: string;
 };
 
-export type TypeProjectScientificDomains = {
+// Project Scientific Domains type
+type ProjectScientificDomainType = {
   id: string;
   projectId: string;
-  scientificDomainId: string;
+  cientificDomainId: string;
 };
 
-export type TypeScientificDomain = {
+// Scientific Domain type
+type ScientificDomainType = {
   id: string;
   name: string;
 };
 
-export type TypeProjectScientificAreas = {
+// Project Scientific Areas type
+type ProjectScientificAreaType = {
   id: string;
   projectId: string;
-  scientificAreaId: string;
+  cientificAreaId: string;
 };
 
-export type TypeScientificArea = {
+// Scientific Area type
+type ScientificAreaType = {
   id: string;
   name: string;
-  scientificDomainId: string;
+  cientificDomainId: string;
 };
 
-export type TypeEntity = {
+// Entity type
+type EntityType = {
   id: string;
   name: string;
   description: string;
@@ -97,18 +109,21 @@ export type TypeEntity = {
   country: string;
 };
 
-export type TypeEntityContactPoints = {
+// Entity Contact Points type
+type EntityContactPointType = {
   id: string;
   contactPointId: string;
   entityId: string;
 };
 
-export type TypeContactPoint = {
+// Contact Point type
+type ContactPointType = {
   id: string;
   role: string;
 };
 
-export type TypeContactPointInfo = {
+// Contact Point Info type
+type ContactPointInfoType = {
   id: string;
   contactPointId: string;
   name: string;
@@ -117,48 +132,56 @@ export type TypeContactPointInfo = {
   designation?: string;
 };
 
-export type TypeFunding = {
+// Funding type
+type FundingType = {
   id: string;
   isIntern: boolean;
   value: number;
 };
 
-export type TypeEntityFundings = {
+// Entity Fundings type
+type EntityFundingType = {
   id: string;
   entityId: string;
   fundingId: string;
 };
 
-export type TypeProgram = {
+// Program type
+type ProgramType = {
   id: string;
   name: string;
 };
 
-export type TypeProgramsFundings = {
+// Programs Fundings type
+type ProgramFundingType = {
   id: string;
   programId: string;
   fundingId: string;
 };
 
-export type TypeProjectFundings = {
+// Project Fundings type
+type ProjectFundingType = {
   projectId: string;
   fundingId: string;
 };
 
-export type TypeDroneParts = {
+// Drone Parts type
+type DronePartType = {
   id: string;
   name: string;
   quantity: number;
 };
 
-export type TypeDrone = {
+// Drone type
+type DroneType = {
   id: string;
   userId: string;
   finish: boolean;
-  createdAt: Date;
+  createdAt: string; // Date in ISO format
 };
 
-export type TypeDroneHasParts = {
+// Drone Has Parts type
+type DroneHasPartType = {
   partId: string;
   droneId: string;
 };

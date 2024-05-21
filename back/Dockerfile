@@ -17,7 +17,7 @@ RUN npm install pm2 -g && npm install ts-node -g && npm install typescript -g
 COPY . .
 
 # Expõe a porta que o Node.js vai rodar
-EXPOSE 3000
+EXPOSE 3001
 
 # Comando para iniciar a aplicação
 CMD ["sh", "-c", "sleep 90 && npm start"]
