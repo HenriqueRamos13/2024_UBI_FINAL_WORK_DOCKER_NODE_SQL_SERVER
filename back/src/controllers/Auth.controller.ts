@@ -70,7 +70,7 @@ class AuthController {
         .input("email", email)
         .query("UPDATE [user] SET companyId = @companyId WHERE email = @email");
 
-      return res.json({ message: "User created" });
+      res.json({ message: "User created" });
     } catch (error) {
       return ErrorHandler.Unauthorized(error, TEXTS.error.WRONG_USER, next);
     } finally {

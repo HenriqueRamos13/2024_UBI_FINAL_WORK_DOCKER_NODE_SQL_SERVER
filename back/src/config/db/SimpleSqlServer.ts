@@ -1,7 +1,7 @@
 import * as mssql from "mssql";
 import "dotenv/config";
 
-export default async (): Promise<mssql.ConnectionPool> => {
+const DB = async (): Promise<mssql.ConnectionPool> => {
   const config = {
     user: process.env.DB_USER,
     password: process.env.DB_PASS,
@@ -20,3 +20,5 @@ export default async (): Promise<mssql.ConnectionPool> => {
 
   return await mssql.connect(config);
 };
+
+export default DB;

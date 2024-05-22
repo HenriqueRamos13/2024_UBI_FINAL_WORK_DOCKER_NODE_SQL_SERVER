@@ -61,8 +61,6 @@ class SessionController {
         secure: process.env.NODE_ENV === "production",
       });
 
-      await pool.close();
-
       res.json({ token });
     } catch (error) {
       return ErrorHandler.Unauthorized(
@@ -70,6 +68,8 @@ class SessionController {
         TEXTS.error.WRONG_USER,
         next
       );
+    } finally {
+      await pool.close();
     }
   }
 }
