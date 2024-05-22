@@ -4,6 +4,18 @@ GO
 USE [database];
 GO
 
+-- Programaçao no servidor
+
+CREATE TABLE company (
+    id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+    name NVARCHAR(255) NOT NULL
+);
+GO
+
+CREATE INDEX idx_company_name ON company(name);
+
+-- DB
+
 CREATE TABLE [user] (
     id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
     name NVARCHAR(255) NOT NULL,
@@ -13,18 +25,17 @@ CREATE TABLE [user] (
     employeeId NVARCHAR(255),
     orcid NVARCHAR(255),
     role NVARCHAR(255) NOT NULL CHECK (role IN ('admin', 'project_creator', 'user')),
-    recoverPasswordToken NVARCHAR(255)
+    recoverPasswordToken NVARCHAR(255),
+    companyId UNIQUEIDENTIFIER,
+    FOREIGN KEY (companyId) REFERENCES company(id) ON DELETE SET NULL,
+    UNIQUE (email)
 );
 GO
 
-CREATE TABLE user_projects (
-    id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
-    userId UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES [user](id),
-    projectId UNIQUEIDENTIFIER NOT NULL,
-    role NVARCHAR(50) NOT NULL CHECK (role IN ('responsible', 'promotor', 'copromotor', 'leader', 'participant')),
-    alocatedTime INT NOT NULL
-);
-GO
+CREATE INDEX idx_user_email ON [user](email);
+CREATE INDEX idx_user_name ON [user](name);
+CREATE INDEX idx_user_companyId ON [user](companyId);
+
 
 CREATE TABLE project (
     id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
@@ -41,12 +52,26 @@ CREATE TABLE project (
 );
 GO
 
-CREATE TABLE project_infos (
+CREATE INDEX idx_project_type ON project(type);
+CREATE INDEX idx_project_status ON project(status);
+CREATE INDEX idx_project_startDate ON project(startDate);
+CREATE INDEX idx_project_finishDate ON project(finishDate);
+
+
+CREATE TABLE user_projects (
     id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
-    projectId UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES project(id),
-    projectInfoId UNIQUEIDENTIFIER NOT NULL
+    userId UNIQUEIDENTIFIER NOT NULL,
+    projectId UNIQUEIDENTIFIER NOT NULL,
+    role NVARCHAR(50) NOT NULL CHECK (role IN ('responsible', 'promotor', 'copromotor', 'leader', 'participant')),
+    alocatedTime INT NOT NULL,
+    FOREIGN KEY (userId) REFERENCES [user](id) ON DELETE CASCADE,
+    FOREIGN KEY (projectId) REFERENCES project(id) ON DELETE CASCADE
 );
 GO
+
+CREATE INDEX idx_user_projects_userId ON user_projects(userId);
+CREATE INDEX idx_user_projects_projectId ON user_projects(projectId);
+
 
 CREATE TABLE project_info (
     id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
@@ -57,12 +82,21 @@ CREATE TABLE project_info (
 );
 GO
 
-CREATE TABLE project_keywords (
+CREATE INDEX idx_project_info_language ON project_info(language);
+CREATE INDEX idx_project_info_name ON project_info(name);
+CREATE INDEX idx_project_info_title ON project_info(title);
+
+CREATE TABLE project_infos (
     id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
-    projectId UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES project(id),
-    keywordId UNIQUEIDENTIFIER NOT NULL
+    projectId UNIQUEIDENTIFIER NOT NULL,
+    projectInfoId UNIQUEIDENTIFIER NOT NULL,
+    FOREIGN KEY (projectId) REFERENCES project(id) ON DELETE CASCADE,
+    FOREIGN KEY (projectInfoId) REFERENCES project_info(id) ON DELETE CASCADE
 );
 GO
+
+CREATE INDEX idx_project_infos_projectId ON project_infos(projectId);
+
 
 CREATE TABLE keywords (
     id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
@@ -70,12 +104,19 @@ CREATE TABLE keywords (
 );
 GO
 
-CREATE TABLE project_scientific_domains (
+CREATE INDEX idx_keywords_name ON keywords(name);
+
+CREATE TABLE project_keywords (
     id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
-    projectId UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES project(id),
-    cientificDomainId UNIQUEIDENTIFIER NOT NULL
+    projectId UNIQUEIDENTIFIER NOT NULL,
+    keywordId UNIQUEIDENTIFIER NOT NULL,
+    FOREIGN KEY (projectId) REFERENCES project(id) ON DELETE CASCADE,
+    FOREIGN KEY (keywordId) REFERENCES keywords(id) ON DELETE CASCADE
 );
 GO
+
+CREATE INDEX idx_project_keywords_projectId ON project_keywords(projectId);
+
 
 CREATE TABLE cientific_domain (
     id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
@@ -83,19 +124,41 @@ CREATE TABLE cientific_domain (
 );
 GO
 
-CREATE TABLE project_scientific_areas (
+CREATE INDEX idx_cientific_domain_name ON cientific_domain(name);
+
+CREATE TABLE project_scientific_domains (
     id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
-    projectId UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES project(id),
-    cientificAreaId UNIQUEIDENTIFIER NOT NULL
+    projectId UNIQUEIDENTIFIER NOT NULL,
+    cientificDomainId UNIQUEIDENTIFIER NOT NULL,
+    FOREIGN KEY (projectId) REFERENCES project(id) ON DELETE CASCADE,
+    FOREIGN KEY (cientificDomainId) REFERENCES cientific_domain(id) ON DELETE CASCADE
 );
 GO
+
+CREATE INDEX idx_project_scientific_domains_projectId ON project_scientific_domains(projectId);
+
 
 CREATE TABLE cientific_area (
     id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
     name NVARCHAR(255) NOT NULL,
-    cientificDomainId UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES cientific_domain(id)
+    cientificDomainId UNIQUEIDENTIFIER NOT NULL,
+    FOREIGN KEY (cientificDomainId) REFERENCES cientific_domain(id) ON DELETE CASCADE
 );
 GO
+
+CREATE INDEX idx_cientific_area_name ON cientific_area(name);
+CREATE INDEX idx_cientific_area_cientificDomainId ON cientific_area(cientificDomainId);
+
+CREATE TABLE project_scientific_areas (
+    id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+    projectId UNIQUEIDENTIFIER NOT NULL,
+    cientificAreaId UNIQUEIDENTIFIER NOT NULL,
+    FOREIGN KEY (projectId) REFERENCES project(id) ON DELETE CASCADE,
+    FOREIGN KEY (cientificAreaId) REFERENCES cientific_area(id) ON DELETE CASCADE
+);
+GO
+
+CREATE INDEX idx_project_scientific_areas_projectId ON project_scientific_areas(projectId);
 
 CREATE TABLE entity (
     id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
@@ -108,12 +171,9 @@ CREATE TABLE entity (
 );
 GO
 
-CREATE TABLE entity_contact_points (
-    id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
-    contactPointId UNIQUEIDENTIFIER NOT NULL,
-    entityId UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES entity(id)
-);
-GO
+CREATE INDEX idx_entity_name ON entity(name);
+CREATE INDEX idx_entity_acronym ON entity(acronym);
+
 
 CREATE TABLE contact_point (
     id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
@@ -121,15 +181,31 @@ CREATE TABLE contact_point (
 );
 GO
 
+CREATE INDEX idx_contact_point_role ON contact_point(role);
+
+CREATE TABLE entity_contact_points (
+    id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+    contactPointId UNIQUEIDENTIFIER NOT NULL,
+    entityId UNIQUEIDENTIFIER NOT NULL,
+    FOREIGN KEY (entityId) REFERENCES entity(id) ON DELETE CASCADE,
+    FOREIGN KEY (contactPointId) REFERENCES contact_point(id) ON DELETE CASCADE
+);
+GO
+
+CREATE INDEX idx_entity_contact_points_entityId ON entity_contact_points(entityId);
+
 CREATE TABLE contact_point_info (
     id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
-    contactPointId UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES contact_point(id),
+    contactPointId UNIQUEIDENTIFIER NOT NULL,
     name NVARCHAR(255) NOT NULL,
     email NVARCHAR(255) NOT NULL,
     phone NVARCHAR(255),
-    designation NVARCHAR(255)
+    designation NVARCHAR(255),
+    FOREIGN KEY (contactPointId) REFERENCES contact_point(id) ON DELETE CASCADE
 );
 GO
+
+CREATE INDEX idx_contact_point_info_contactPointId ON contact_point_info(contactPointId);
 
 CREATE TABLE funding (
     id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
@@ -138,12 +214,18 @@ CREATE TABLE funding (
 );
 GO
 
+CREATE INDEX idx_funding_isIntern ON funding(isIntern);
+
 CREATE TABLE entity_fundings (
     id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
-    entityId UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES entity(id),
-    fundingId UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES funding(id)
+    entityId UNIQUEIDENTIFIER NOT NULL,
+    fundingId UNIQUEIDENTIFIER NOT NULL,
+    FOREIGN KEY (entityId) REFERENCES entity(id) ON DELETE CASCADE,
+    FOREIGN KEY (fundingId) REFERENCES funding(id) ON DELETE CASCADE
 );
 GO
+
+CREATE INDEX idx_entity_fundings_entityId ON entity_fundings(entityId);
 
 CREATE TABLE program (
     id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
@@ -151,261 +233,68 @@ CREATE TABLE program (
 );
 GO
 
+CREATE INDEX idx_program_name ON program(name);
+
 CREATE TABLE programs_fundings (
     id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
-    programId UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES program(id),
-    fundingId UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES funding(id)
+    programId UNIQUEIDENTIFIER NOT NULL,
+    fundingId UNIQUEIDENTIFIER NOT NULL,
+    FOREIGN KEY (programId) REFERENCES program(id) ON DELETE CASCADE,
+    FOREIGN KEY (fundingId) REFERENCES funding(id) ON DELETE CASCADE
 );
 GO
+
+CREATE INDEX idx_programs_fundings_programId ON programs_fundings(programId);
 
 CREATE TABLE project_fundings (
-    projectId UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES project(id),
-    fundingId UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES funding(id)
+    projectId UNIQUEIDENTIFIER NOT NULL,
+    fundingId UNIQUEIDENTIFIER NOT NULL,
+    FOREIGN KEY (projectId) REFERENCES project(id) ON DELETE CASCADE,
+    FOREIGN KEY (fundingId) REFERENCES funding(id) ON DELETE CASCADE
 );
 GO
 
+CREATE INDEX idx_project_fundings_projectId ON project_fundings(projectId);
 
 -- Programaçao no servidor
 
 CREATE TABLE drone_parts (
     id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
     name NVARCHAR(255) NOT NULL,
-    quantity INT NOT NULL DEFAULT 0
+    quantity INT NOT NULL DEFAULT 0,
+    companyId UNIQUEIDENTIFIER NOT NULL,
+    FOREIGN KEY (companyId) REFERENCES company(id) ON DELETE CASCADE
 );
 GO
+
+CREATE INDEX idx_drone_parts_companyId ON drone_parts(companyId);
 
 CREATE TABLE drone (
     id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
-    user_id UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES [user](id),
-    finish BIT NOT NULL DEFAULT 0,  -- Usando BIT para boolean
-    created_at DATE NOT NULL
+    userId UNIQUEIDENTIFIER NOT NULL,
+    finish BIT NOT NULL DEFAULT 0,
+    createdAt DATE NOT NULL,
+    companyId UNIQUEIDENTIFIER NOT NULL,
+    FOREIGN KEY (userId) REFERENCES [user](id) ON DELETE CASCADE
 );
 GO
+
+CREATE INDEX idx_drone_companyId ON drone(companyId);
 
 CREATE TABLE drone_has_parts (
-    part_id UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES drone_parts(id),
-    drone_id UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES drone(id),
-    PRIMARY KEY (part_id, drone_id)
+    partId UNIQUEIDENTIFIER NOT NULL,
+    droneId UNIQUEIDENTIFIER NOT NULL,
+    PRIMARY KEY (partId, droneId),
+    FOREIGN KEY (partId) REFERENCES drone_parts(id) ON DELETE CASCADE,
+    FOREIGN KEY (droneId) REFERENCES drone(id) ON DELETE CASCADE
 );
 GO
 
+CREATE INDEX idx_drone_has_parts_partId ON drone_has_parts(partId);
+CREATE INDEX idx_drone_has_parts_droneId ON drone_has_parts(droneId);
 
 
 
 
--- seed
 
--- Insert Users
-INSERT INTO [user] (name, email, password, role)
-VALUES
-    ('Henrique Marques', 'henrique.mrcr@gmail.com', '123456789', 'admin'),
-    ('Professor X', 'professor@gmail.com', '123456789', 'project_creator'),
-    ('Alice Johnson', 'alice.johnson@example.com', 'password123', 'user'),
-    ('Bob Smith', 'bob.smith@example.com', 'password123', 'user');
 
--- Get User IDs
-DECLARE @UserId1 UNIQUEIDENTIFIER = (SELECT id FROM [user] WHERE email = 'henrique.mrcr@gmail.com');
-DECLARE @UserId2 UNIQUEIDENTIFIER = (SELECT id FROM [user] WHERE email = 'professor@gmail.com');
-DECLARE @UserId3 UNIQUEIDENTIFIER = (SELECT id FROM [user] WHERE email = 'alice.johnson@example.com');
-DECLARE @UserId4 UNIQUEIDENTIFIER = (SELECT id FROM [user] WHERE email = 'bob.smith@example.com');
-
--- Insert Projects
-INSERT INTO project (type, status, competitiveFinancial, isNational, isIntern, cost)
-VALUES
-    ('funded', 'ongoing', 1, 1, 0, 20000),
-    ('intern', 'approved', 0, 0, 1, 15000),
-    ('contract', 'submitting', 1, 1, 0, 30000),
-    ('funded', 'closed', 0, 1, 1, 50000);
-
--- Get Project IDs
-DECLARE @ProjectId1 UNIQUEIDENTIFIER = (SELECT id FROM project WHERE cost = 20000);
-DECLARE @ProjectId2 UNIQUEIDENTIFIER = (SELECT id FROM project WHERE cost = 15000);
-DECLARE @ProjectId3 UNIQUEIDENTIFIER = (SELECT id FROM project WHERE cost = 30000);
-DECLARE @ProjectId4 UNIQUEIDENTIFIER = (SELECT id FROM project WHERE cost = 50000);
-
--- Link Users to Projects
-INSERT INTO user_projects (userId, projectId, role, alocatedTime)
-VALUES
-    (@UserId1, @ProjectId1, 'leader', 50),
-    (@UserId2, @ProjectId2, 'participant', 70),
-    (@UserId3, @ProjectId1, 'copromotor', 22),
-    (@UserId4, @ProjectId2, 'responsible', 32),
-    (@UserId3, @ProjectId3, 'leader', 100),
-    (@UserId4, @ProjectId4, 'promotor', 100);
-
--- Project Info
-INSERT INTO project_info (language, name, title, description)
-VALUES
-    ('en', 'Drone Project', 'Aerial Mapping Drone', 'A project to develop an aerial mapping drone.'),
-    ('pt', 'AI Research', 'Advanced AI Algorithms', 'A project focused on creating advanced AI algorithms.'),
-    ('en', 'Renewable Energy', 'Solar Energy Development', 'A project to develop efficient solar panels.'),
-    ('pt', 'Space Exploration', 'Mars Habitat', 'Exploring the possibilities of a habitat on Mars.');
-
--- Link Project Info to Projects
-INSERT INTO project_infos (projectId, projectInfoId)
-VALUES
-    (@ProjectId1, (SELECT id FROM project_info WHERE name = 'Drone Project')),
-    (@ProjectId2, (SELECT id FROM project_info WHERE name = 'AI Research')),
-    (@ProjectId3, (SELECT id FROM project_info WHERE name = 'Renewable Energy')),
-    (@ProjectId4, (SELECT id FROM project_info WHERE name = 'Space Exploration'));
-
--- Drones
-INSERT INTO drone (user_id, finish, created_at)
-VALUES
-    (@UserId1, 0, GETDATE()),
-    (@UserId2, 0, GETDATE());
-
--- Get Drone IDs
-DECLARE @DroneId1 UNIQUEIDENTIFIER = (SELECT TOP 1 id FROM drone ORDER BY NEWID());
-DECLARE @DroneId2 UNIQUEIDENTIFIER = (SELECT TOP 1 id FROM drone ORDER BY NEWID() DESC);
-
--- Drone Parts
-INSERT INTO drone_parts (name, quantity)
-VALUES
-    ('Propeller', 8),
-    ('Camera', 4),
-    ('Battery', 10);
-
--- Get Part IDs
-DECLARE @PartId1 UNIQUEIDENTIFIER = (SELECT id FROM drone_parts WHERE name = 'Propeller');
-DECLARE @PartId2 UNIQUEIDENTIFIER = (SELECT id FROM drone_parts WHERE name = 'Camera');
-DECLARE @PartId3 UNIQUEIDENTIFIER = (SELECT id FROM drone_parts WHERE name = 'Battery');
-
--- Link Parts to Drones
-INSERT INTO drone_has_parts (part_id, drone_id)
-VALUES
-    (@PartId1, @DroneId1),
-    (@PartId2, @DroneId1),
-    (@PartId3, @DroneId1),
-    (@PartId1, @DroneId2),
-    (@PartId2, @DroneId2),
-    (@PartId3, @DroneId2);
-
--- Insert Keywords
-INSERT INTO keywords (name)
-VALUES
-    ('Technology'),
-    ('Innovation'),
-    ('Renewable Energy');
-
--- Get Keyword IDs
-DECLARE @KeywordId1 UNIQUEIDENTIFIER = (SELECT id FROM keywords WHERE name = 'Technology');
-DECLARE @KeywordId2 UNIQUEIDENTIFIER = (SELECT id FROM keywords WHERE name = 'Innovation');
-DECLARE @KeywordId3 UNIQUEIDENTIFIER = (SELECT id FROM keywords WHERE name = 'Renewable Energy');
-
--- Link Keywords to Projects
-INSERT INTO project_keywords (projectId, keywordId)
-VALUES
-    (@ProjectId1, @KeywordId1),
-    (@ProjectId2, @KeywordId2),
-    (@ProjectId3, @KeywordId3);
-
--- Insert Scientific Domains
-INSERT INTO cientific_domain (name)
-VALUES
-    ('Engineering'),
-    ('Physics'),
-    ('Biology');
-
--- Get Scientific Domain IDs
-DECLARE @DomainId1 UNIQUEIDENTIFIER = (SELECT id FROM cientific_domain WHERE name = 'Engineering');
-DECLARE @DomainId2 UNIQUEIDENTIFIER = (SELECT id FROM cientific_domain WHERE name = 'Physics');
-DECLARE @DomainId3 UNIQUEIDENTIFIER = (SELECT id FROM cientific_domain WHERE name = 'Biology');
-
--- Link Scientific Domains to Projects
-INSERT INTO project_scientific_domains (projectId, cientificDomainId)
-VALUES
-    (@ProjectId1, @DomainId1),
-    (@ProjectId2, @DomainId2),
-    (@ProjectId3, @DomainId3);
-
--- Insert Scientific Areas
-INSERT INTO cientific_area (name, cientificDomainId)
-VALUES
-    ('Robotics', @DomainId1),
-    ('Quantum Mechanics', @DomainId2),
-    ('Genetics', @DomainId3);
-
--- Get Scientific Area IDs
-DECLARE @AreaId1 UNIQUEIDENTIFIER = (SELECT id FROM cientific_area WHERE name = 'Robotics');
-DECLARE @AreaId2 UNIQUEIDENTIFIER = (SELECT id FROM cientific_area WHERE name = 'Quantum Mechanics');
-DECLARE @AreaId3 UNIQUEIDENTIFIER = (SELECT id FROM cientific_area WHERE name = 'Genetics');
-
--- Link Scientific Areas to Projects
-INSERT INTO project_scientific_areas (projectId, cientificAreaId)
-VALUES
-    (@ProjectId1, @AreaId1),
-    (@ProjectId2, @AreaId2),
-    (@ProjectId3, @AreaId3);
-
--- Insert Entities
-INSERT INTO entity (name, description, acronym, address, url, country)
-VALUES
-    ('Tech Innovations Inc.', 'A company dedicated to innovative technology solutions.', 'TII', '123 Tech Way, Innovation City', 'http://techinnovations.com', 'USA'),
-    ('Quantum Research Lab', 'A leading research facility in quantum physics.', 'QRL', '456 Quantum Rd, Physics Town', 'http://quantumlab.com', 'Germany');
-
--- Get Entity IDs
-DECLARE @EntityId1 UNIQUEIDENTIFIER = (SELECT id FROM entity WHERE acronym = 'TII');
-DECLARE @EntityId2 UNIQUEIDENTIFIER = (SELECT id FROM entity WHERE acronym = 'QRL');
-
--- Insert Fundings
-INSERT INTO funding (isIntern, value)
-VALUES
-    (0, 500000),
-    (1, 200000);
-
--- Get Funding IDs
-DECLARE @FundingId1 UNIQUEIDENTIFIER = (SELECT TOP 1 id FROM funding ORDER BY NEWID());
-DECLARE @FundingId2 UNIQUEIDENTIFIER = (SELECT TOP 1 id FROM funding ORDER BY NEWID() DESC);
-
--- Link Entities to Fundings
-INSERT INTO entity_fundings (entityId, fundingId)
-VALUES
-    (@EntityId1, @FundingId1),
-    (@EntityId2, @FundingId2);
-
--- Insert Programs
-INSERT INTO program (name)
-VALUES
-    ('Innovation Grant'),
-    ('International Physics Symposium');
-
--- Get Program IDs
-DECLARE @ProgramId1 UNIQUEIDENTIFIER = (SELECT id FROM program WHERE name = 'Innovation Grant');
-DECLARE @ProgramId2 UNIQUEIDENTIFIER = (SELECT id FROM program WHERE name = 'International Physics Symposium');
-
--- Link Programs to Fundings
-INSERT INTO programs_fundings (programId, fundingId)
-VALUES
-    (@ProgramId1, @FundingId1),
-    (@ProgramId2, @FundingId2);
-
--- Link Projects to Fundings
-INSERT INTO project_fundings (projectId, fundingId)
-VALUES
-    (@ProjectId1, @FundingId1),
-    (@ProjectId2, @FundingId2);
-
--- Insert Contact Points
-INSERT INTO contact_point (role)
-VALUES
-    ('Technical Support'),
-    ('Customer Service');
-
--- Get Contact Point IDs
-DECLARE @ContactPointId1 UNIQUEIDENTIFIER = (SELECT id FROM contact_point WHERE role = 'Technical Support');
-DECLARE @ContactPointId2 UNIQUEIDENTIFIER = (SELECT id FROM contact_point WHERE role = 'Customer Service');
-
--- Insert Contact Point Info
-INSERT INTO contact_point_info (contactPointId, name, email, phone, designation)
-VALUES
-    (@ContactPointId1, 'John Doe', 'john.doe@techinnovations.com', '123-456-7890', 'Tech Support Lead'),
-    (@ContactPointId2, 'Jane Doe', 'jane.doe@quantumlab.com', '098-765-4321', 'Customer Service Manager');
-
--- Link Contact Points to Entities
-INSERT INTO entity_contact_points (entityId, contactPointId)
-VALUES
-    (@EntityId1, @ContactPointId1),
-    (@EntityId2, @ContactPointId2);
-
-GO

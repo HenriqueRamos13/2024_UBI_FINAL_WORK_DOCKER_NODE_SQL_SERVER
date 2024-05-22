@@ -1,6 +1,6 @@
 import { routeConfig } from "../utils/decorators/Route.decorator";
 import METHOD from "../utils/enums/methods.enum";
-import PassportController from "./Passport.controller";
+
 import { Public } from "../utils/decorators/Public.decorator";
 import { RequestParams } from "../types";
 

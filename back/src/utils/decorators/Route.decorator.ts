@@ -26,7 +26,6 @@ function routeConfig({
     }
 
     console.log(`Configuring route ${method} ${path}`);
-    // Modificação para passar um objeto unificado para a função original
     const response = async (
       req: Request,
       res: Response,
@@ -55,14 +54,17 @@ function routeConfig({
       }
     };
 
-    // Registrando o handler modificado na rota especificada
     route[method](path, response);
 
-    // Adicionando metadados para o Swagger
-    const swaggerMetadata =
-      Reflect.getMetadata("swagger", target.constructor) || [];
-    swaggerMetadata.push({ method, path, handler: descriptor.value });
-    Reflect.defineMetadata("swagger", swaggerMetadata, target.constructor);
+    const existingSwaggerMetadata = Reflect.getMetadata(
+      "swagger",
+      target.constructor
+    );
+    if (existingSwaggerMetadata) {
+      const swaggerMetadata = existingSwaggerMetadata || [];
+      swaggerMetadata.push({ method, path, handler: descriptor.value });
+      Reflect.defineMetadata("swagger", swaggerMetadata, target.constructor);
+    }
   };
 }
 

@@ -1,8 +1,9 @@
 import { routeConfig } from "../utils/decorators/Route.decorator";
 import METHOD from "../utils/enums/methods.enum";
-import PassportController from "./Passport.controller";
 import { Public } from "../utils/decorators/Public.decorator";
 import { RequestParams } from "../types";
+import { Roles } from "../utils/decorators/Roles.decorator";
+import { Role } from "../utils/enums/Roles.enum";
 
 const CONTROLLER_MICROSSERVICE_ID = 1;
 
@@ -13,7 +14,7 @@ class UserController {
     id: CONTROLLER_MICROSSERVICE_ID,
   })
   @Public()
-  public async get({ req, res, next }: RequestParams): Promise<void> {
+  public async get({ req, res, next, user }: RequestParams): Promise<void> {
     res.json({ message: "GET" });
   }
 
@@ -22,8 +23,12 @@ class UserController {
     path: "/user",
     id: CONTROLLER_MICROSSERVICE_ID,
   })
-  @Public()
-  public async post({ req, res, next }: RequestParams): Promise<void> {
+  @Roles(Role.ADMIN)
+  public async post({ req, res, next, user }: RequestParams): Promise<void> {
+    const { name, email, password } = req.body;
+
+    const {} = user;
+
     res.json({ message: "POST" });
   }
 

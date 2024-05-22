@@ -1,15 +1,14 @@
 import { routeConfig } from "../utils/decorators/Route.decorator";
 import METHOD from "../utils/enums/methods.enum";
-
 import { Public } from "../utils/decorators/Public.decorator";
 import { RequestParams } from "../types";
 
 const CONTROLLER_MICROSSERVICE_ID = 1;
 
-class ContactPointController {
+class CompanyController {
   @routeConfig({
     method: METHOD.GET,
-    path: "/contactpoint",
+    path: "/company",
     id: CONTROLLER_MICROSSERVICE_ID,
   })
   @Public()
@@ -19,7 +18,7 @@ class ContactPointController {
 
   @routeConfig({
     method: METHOD.POST,
-    path: "/contactpoint",
+    path: "/company",
     id: CONTROLLER_MICROSSERVICE_ID,
   })
   @Public()
@@ -29,7 +28,7 @@ class ContactPointController {
 
   @routeConfig({
     method: METHOD.PUT,
-    path: "/contactpoint",
+    path: "/company",
     id: CONTROLLER_MICROSSERVICE_ID,
   })
   @Public()
@@ -39,7 +38,7 @@ class ContactPointController {
 
   @routeConfig({
     method: METHOD.PATCH,
-    path: "/contactpoint",
+    path: "/company",
     id: CONTROLLER_MICROSSERVICE_ID,
   })
   @Public()
@@ -49,7 +48,7 @@ class ContactPointController {
 
   @routeConfig({
     method: METHOD.DELETE,
-    path: "/contactpoint",
+    path: "/company",
     id: CONTROLLER_MICROSSERVICE_ID,
   })
   @Public()
@@ -58,4 +57,4 @@ class ContactPointController {
   }
 }
 
-export default ContactPointController;
+export default CompanyController;

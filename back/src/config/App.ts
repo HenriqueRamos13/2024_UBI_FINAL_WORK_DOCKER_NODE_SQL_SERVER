@@ -41,6 +41,7 @@ import ProjectFundingsController from "../controllers/ProjectFundings.controller
 import DroneController from "../controllers/Drone.controller";
 import DronePartsController from "../controllers/DroneParts.controller";
 import DroneHasPartsController from "../controllers/DroneHasParts.controller";
+import CompanyController from "../controllers/Company.controller";
 
 class App {
   public app: any;
@@ -95,6 +96,7 @@ class App {
     new DroneController();
     new DronePartsController();
     new DroneHasPartsController();
+    new CompanyController();
 
     this.app.use(route);
     setupSwagger(this.app);
