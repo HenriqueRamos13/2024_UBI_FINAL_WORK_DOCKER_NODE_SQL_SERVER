@@ -13,67 +13,65 @@ const CONTROLLER_MICROSSERVICE_ID = 1;
 class UserController {
   @routeConfig({
     method: METHOD.GET,
-    path: "/user",
+    path: "/user/:id?",
     id: CONTROLLER_MICROSSERVICE_ID,
   })
-  @Public()
+  @Roles(Role.ADMIN, Role.USER, Role.PROJECT_CREATOR)
   public async get({ req, res, next, user }: RequestParams): Promise<void> {
-    res.json({ message: "GET" });
+    const { id } = req.params;
+    const pool = await DB();
+
+    try {
+      if (id) {
+        const user = await pool
+          .request()
+          .input("id", id)
+          .query("SELECT * FROM [User] WHERE id = @id");
+
+        if (user.recordset.length === 0) {
+          return ErrorHandler.Unauthorized(
+            "User not found",
+            "User not found",
+            next
+          );
+        }
+
+        res.json({
+          user: {
+            id: user.recordset[0].id,
+            name: user.recordset[0].name,
+            email: user.recordset[0].email,
+            role: user.recordset[0].role,
+          },
+        });
+      } else {
+        const { id } = user;
+
+        const users = await pool
+          .request()
+          .input("id", id)
+          .query("SELECT * FROM [User] WHERE id = @id");
+
+        res.json({
+          user: {
+            id: users.recordset[0].id,
+            name: users.recordset[0].name,
+            email: users.recordset[0].email,
+            role: users.recordset[0].role,
+          },
+        });
+      }
+    } catch (error) {
+      return ErrorHandler.Unauthorized(
+        "User not found",
+        "User not found",
+        next
+      );
+    } finally {
+      await pool.close();
+    }
   }
 
-  /**
-   * @swagger
-   * /user:
-   *   post:
-   *     summary: Create a new user
-   *     parameters:
-   *       - in: query
-   *         name: owner
-   *         required: true
-   *         schema:
-   *           type: string
-   *         description: The owner of the user
-   *       - in: path
-   *         name: id
-   *         required: true
-   *         schema:
-   *           type: string
-   *         description: The user ID
-   *     requestBody:
-   *       required: true
-   *       content:
-   *         application/json:
-   *           schema:
-   *             type: object
-   *             properties:
-   *               name:
-   *                 type: string
-   *               model:
-   *                 type: string
-   *               serialNumber:
-   *                 type: string
-   *             required:
-   *               - name
-   *               - model
-   *     responses:
-   *       201:
-   *         description: The created drone
-   *         content:
-   *           application/json:
-   *             schema:
-   *               type: object
-   *               properties:
-   *                 id:
-   *                   type: string
-   *                 name:
-   *                   type: string
-   *                 model:
-   *                   type: string
-   *                 serialNumber:
-   *                   type: string
-   *                 owner:
-   *                   type: string
-   */
   @routeConfig({
     method: METHOD.POST,
     path: "/user",
@@ -147,22 +145,52 @@ class UserController {
 
   @routeConfig({
     method: METHOD.PUT,
-    path: "/user",
+    path: "/user/:id?",
     id: CONTROLLER_MICROSSERVICE_ID,
   })
   @Public()
-  public async put({ req, res, next }: RequestParams): Promise<void> {
-    res.json({ message: "PUT" });
-  }
+  public async put({ req, res, next, user }: RequestParams): Promise<void> {
+    const { id } = req.params;
+    const { name, password } = req.body;
 
-  @routeConfig({
-    method: METHOD.PATCH,
-    path: "/user",
-    id: CONTROLLER_MICROSSERVICE_ID,
-  })
-  @Public()
-  public async patch({ req, res, next }: RequestParams): Promise<void> {
-    res.json({ message: "PATCH" });
+    const pool = await DB();
+
+    try {
+      const salt = bcrypt.genSaltSync(14);
+      const hash = bcrypt.hashSync(password, salt);
+
+      if (id) {
+        await pool
+          .request()
+          .input("id", id)
+          .input("name", name)
+          .input("password", hash)
+          .query(
+            "UPDATE [User] SET name = @name, password = @password WHERE id = @id"
+          );
+      } else {
+        const { id } = user;
+
+        await pool
+          .request()
+          .input("id", id)
+          .input("name", name)
+          .input("password", hash)
+          .query(
+            "UPDATE [User] SET name = @name, password = @password WHERE id = @id"
+          );
+      }
+
+      res.json({ message: "User updated" });
+    } catch (error) {
+      return ErrorHandler.Unauthorized(
+        "Error updating user",
+        "Error updating user",
+        next
+      );
+    } finally {
+      await pool.close();
+    }
   }
 
   @routeConfig({
@@ -171,8 +199,27 @@ class UserController {
     id: CONTROLLER_MICROSSERVICE_ID,
   })
   @Public()
-  public async delete({ req, res, next }: RequestParams): Promise<void> {
-    res.json({ message: "DELETE" });
+  public async delete({ req, res, next, user }: RequestParams): Promise<void> {
+    const { id } = user;
+
+    const pool = await DB();
+
+    try {
+      await pool
+        .request()
+        .input("id", id)
+        .query("DELETE FROM [User] WHERE id = @id");
+
+      res.json({ message: "User deleted" });
+    } catch (error) {
+      return ErrorHandler.Unauthorized(
+        "Error deleting user",
+        "Error deleting user",
+        next
+      );
+    } finally {
+      await pool.close();
+    }
   }
 }
 
