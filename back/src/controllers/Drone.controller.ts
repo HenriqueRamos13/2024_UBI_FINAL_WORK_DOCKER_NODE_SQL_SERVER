@@ -51,7 +51,7 @@ class DroneController {
     const { id } = req.params;
     const { companyId, id: userId } = user;
     const pool = await DB();
-    console.log(req.params);
+
     try {
       if (id !== "all") {
         const droneResult = await pool
@@ -281,116 +281,45 @@ class DroneController {
         );
       }
 
-      // Manage drone parts
-      if (partIds && partIds.length > 0) {
-        for (const partId of partIds) {
-          await pool
-            .request()
-            .input("droneId", id)
-            .input("partId", partId)
-            .query(
-              "IF NOT EXISTS (SELECT 1 FROM drone_has_parts WHERE droneId = @droneId AND partId = @partId) " +
-                "INSERT INTO drone_has_parts (droneId, partId) VALUES (@droneId, @partId)"
-            );
-        }
-      }
-
-      res.json({ drone: updatedDrone.recordset[0] });
-    } catch (error) {
-      return ErrorHandler.Unauthorized(
-        "Error updating drone",
-        "Error updating drone",
-        next
-      );
-    } finally {
-      await pool.close();
-    }
-  }
-
-  /**
-   * @swagger
-   * /drone/{id}:
-   *   patch:
-   *     summary: Partially update an existing drone
-   *     parameters:
-   *       - in: path
-   *         name: id
-   *         required: true
-   *         schema:
-   *           type: string
-   *         description: The drone ID
-   *     requestBody:
-   *       required: true
-   *       content:
-   *         application/json:
-   *           schema:
-   *             type: object
-   *             properties:
-   *               finish:
-   *                 type: boolean
-   *               partIds:
-   *                 type: array
-   *                 items:
-   *                   type: string
-   *     responses:
-   *       200:
-   *         description: The updated drone
-   *         content:
-   *           application/json:
-   *             schema:
-   *               type: object
-   *               properties:
-   *                 id:
-   *                   type: string
-   *                 finish:
-   *                   type: boolean
-   *                 partIds:
-   *                   type: array
-   *                   items:
-   *                     type: string
-   */
-  @routeConfig({
-    method: METHOD.PATCH,
-    path: "/drone/:id",
-    id: CONTROLLER_MICROSSERVICE_ID,
-  })
-  @Roles()
-  public async patch({ req, res, next, user }: RequestParams): Promise<void> {
-    const { id } = req.params;
-    const { finish, partIds } = req.body;
-    const { companyId } = user;
-    const pool = await DB();
-
-    try {
-      const updatedDrone = await pool
+      // Recupera todas as partes atualmente associadas ao drone
+      const currentPartsResult = await pool
         .request()
-        .input("id", id)
-        .input("finish", finish)
-        .input("companyId", companyId)
-        .query(
-          "UPDATE drone SET finish = COALESCE(@finish, finish), companyId = COALESCE(@companyId, companyId) OUTPUT inserted.* WHERE id = @id"
-        );
+        .input("droneId", id)
+        .query("SELECT partId FROM drone_has_parts WHERE droneId = @droneId");
 
-      if (updatedDrone.recordset.length === 0) {
-        return ErrorHandler.Unauthorized(
-          "Drone not found",
-          "Drone not found",
-          next
-        );
+      const currentPartIds = currentPartsResult.recordset.map(
+        (row) => row.partId
+      );
+
+      // Partes a serem adicionadas e removidas
+      const partsToAdd = partIds.filter(
+        (partId) => !currentPartIds.includes(partId)
+      );
+      const partsToRemove = currentPartIds.filter(
+        (partId) => !partIds.includes(partId)
+      );
+
+      // Adiciona novas partes
+      for (const partId of partsToAdd) {
+        await pool
+          .request()
+          .input("droneId", id)
+          .input("partId", partId)
+          .query(
+            "IF NOT EXISTS (SELECT 1 FROM drone_has_parts WHERE droneId = @droneId AND partId = @partId) " +
+              "INSERT INTO drone_has_parts (droneId, partId) VALUES (@droneId, @partId)"
+          );
       }
 
-      // Manage drone parts
-      if (partIds && partIds.length > 0) {
-        for (const partId of partIds) {
-          await pool
-            .request()
-            .input("droneId", id)
-            .input("partId", partId)
-            .query(
-              "IF NOT EXISTS (SELECT 1 FROM drone_has_parts WHERE droneId = @droneId AND partId = @partId) " +
-                "INSERT INTO drone_has_parts (droneId, partId) VALUES (@droneId, @partId)"
-            );
-        }
+      // Remove partes não mais associadas
+      for (const partId of partsToRemove) {
+        await pool
+          .request()
+          .input("droneId", id)
+          .input("partId", partId)
+          .query(
+            "DELETE FROM drone_has_parts WHERE droneId = @droneId AND partId = @partId"
+          );
       }
 
       res.json({ drone: updatedDrone.recordset[0] });

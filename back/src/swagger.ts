@@ -4,7 +4,6 @@ import { Express } from "express";
 import "reflect-metadata";
 import TestController from "./controllers/Test.controller";
 import AuthController from "./controllers/Auth.controller";
-import SessionController from "./controllers/Session.controller";
 import UserController from "./controllers/User.controller";
 import UserProjectsController from "./controllers/UserProjects.controller";
 import ProjectController from "./controllers/Project.controller";
@@ -57,7 +56,6 @@ function generateSwaggerDocFromRoutes(app: Express) {
   const controllers = [
     TestController,
     AuthController,
-    SessionController,
     UserController,
     UserProjectsController,
     ProjectController,

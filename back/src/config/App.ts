@@ -17,7 +17,6 @@ import cookieParser = require("cookie-parser");
 
 import TestController from "../controllers/Test.controller";
 import AuthController from "../controllers/Auth.controller";
-import SessionController from "../controllers/Session.controller";
 import UserController from "../controllers/User.controller";
 import UserProjectsController from "../controllers/UserProjects.controller";
 import ProjectController from "../controllers/Project.controller";
@@ -72,7 +71,6 @@ class App {
 
     new TestController();
     new AuthController();
-    new SessionController();
     new UserController();
     new UserProjectsController();
     new ProjectController();

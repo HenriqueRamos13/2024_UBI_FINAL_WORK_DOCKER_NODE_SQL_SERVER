@@ -294,8 +294,44 @@ CREATE INDEX idx_drone_has_parts_partId ON drone_has_parts(partId);
 CREATE INDEX idx_drone_has_parts_droneId ON drone_has_parts(droneId);
 
 
+IF OBJECT_ID('trg_instead_of_insert_drone_has_parts', 'TR') IS NOT NULL
+    DROP TRIGGER trg_instead_of_insert_drone_has_parts;
+GO
+
+IF OBJECT_ID('trg_after_insert_drone_has_parts', 'TR') IS NOT NULL
+    DROP TRIGGER trg_after_insert_drone_has_parts;
+GO
+
+IF OBJECT_ID('trg_after_delete_drone_has_parts', 'TR') IS NOT NULL
+    DROP TRIGGER trg_after_delete_drone_has_parts;
+GO
 
 
+
+CREATE TRIGGER trg_instead_of_insert_drone_has_parts
+ON drone_has_parts
+INSTEAD OF INSERT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF EXISTS (
+        SELECT 1
+        FROM inserted i
+        JOIN drone_parts dp ON i.partId = dp.id
+        WHERE dp.quantity <= 0
+    )
+    BEGIN
+        RAISERROR ('The part cannot be added to the drone because the quantity is zero or less.', 16, 1);
+        ROLLBACK TRANSACTION;
+        RETURN;
+    END
+
+    INSERT INTO drone_has_parts (partId, droneId)
+    SELECT partId, droneId
+    FROM inserted;
+END;
+GO
 
 
 CREATE TRIGGER trg_after_insert_drone_has_parts
@@ -312,8 +348,6 @@ BEGIN
     WHERE dp.id = i.partId;
 END;
 GO
-
-
 
 CREATE TRIGGER trg_after_delete_drone_has_parts
 ON drone_has_parts
