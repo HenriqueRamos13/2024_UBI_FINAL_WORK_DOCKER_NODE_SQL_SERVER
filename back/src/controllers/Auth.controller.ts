@@ -10,9 +10,46 @@ import * as bcrypt from "bcryptjs";
 const CONTROLLER_MICROSSSERVICE_ID = 1;
 
 class AuthController {
+  /**
+   * @swagger
+   * /register:
+   *   post:
+   *     summary: Register a new company and user
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             properties:
+   *               company:
+   *                 type: string
+   *               email:
+   *                 type: string
+   *               password:
+   *                 type: string
+   *             required:
+   *               - company
+   *               - email
+   *               - password
+   *     responses:
+   *       201:
+   *         description: User created
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 message:
+   *                   type: string
+   *       400:
+   *         description: Bad Request
+   *       401:
+   *         description: Unauthorized
+   */
   @routeConfig({
     method: METHOD.POST,
-    path: "/auth",
+    path: "/register",
     id: CONTROLLER_MICROSSSERVICE_ID,
   })
   @Public()
@@ -72,7 +109,11 @@ class AuthController {
 
       res.json({ message: "User created" });
     } catch (error) {
-      return ErrorHandler.Unauthorized(error, TEXTS.error.WRONG_USER, next);
+      return ErrorHandler.Unauthorized(
+        error,
+        "Ocorreu um erro ao cadastrar",
+        next
+      );
     } finally {
       await pool.close();
     }

@@ -26,6 +26,10 @@ export function Roles(...roles: Role[]) {
 
       const { role: userRole }: { role: Role } = req.user as any;
 
+      if (roles.length === 0) {
+        return originalMethod.call(this, args);
+      }
+
       if (userRole.length === 0 || !roles.includes(userRole)) {
         ErrorHandler.Unauthorized(
           new Error(

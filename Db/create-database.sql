@@ -298,3 +298,34 @@ CREATE INDEX idx_drone_has_parts_droneId ON drone_has_parts(droneId);
 
 
 
+CREATE TRIGGER trg_after_insert_drone_has_parts
+ON drone_has_parts
+AFTER INSERT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    UPDATE dp
+    SET dp.quantity = dp.quantity - 1
+    FROM drone_parts dp
+    INNER JOIN inserted i ON dp.id = i.partId
+    WHERE dp.id = i.partId;
+END;
+GO
+
+
+
+CREATE TRIGGER trg_after_delete_drone_has_parts
+ON drone_has_parts
+AFTER DELETE
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    UPDATE dp
+    SET dp.quantity = dp.quantity + 1
+    FROM drone_parts dp
+    INNER JOIN deleted d ON dp.id = d.partId
+    WHERE dp.id = d.partId;
+END;
+GO

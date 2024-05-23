@@ -11,6 +11,38 @@ import ErrorHandler from "../utils/Classes/ErrorHandler";
 const CONTROLLER_MICROSSERVICE_ID = 1;
 
 class UserController {
+  /**
+   * @swagger
+   * /user/{id}:
+   *   get:
+   *     summary: Retrieve a user by ID or the authenticated user
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: false
+   *         schema:
+   *           type: string
+   *         description: The user ID
+   *     responses:
+   *       200:
+   *         description: A single user or the authenticated user
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 user:
+   *                   type: object
+   *                   properties:
+   *                     id:
+   *                       type: string
+   *                     name:
+   *                       type: string
+   *                     email:
+   *                       type: string
+   *                     role:
+   *                       type: string
+   */
   @routeConfig({
     method: METHOD.GET,
     path: "/user/:id?",
@@ -72,6 +104,44 @@ class UserController {
     }
   }
 
+  /**
+   * @swagger
+   * /user:
+   *   post:
+   *     summary: Create a new user
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             properties:
+   *               name:
+   *                 type: string
+   *               email:
+   *                 type: string
+   *               password:
+   *                 type: string
+   *               role:
+   *                 type: string
+   *             required:
+   *               - name
+   *               - email
+   *               - password
+   *               - role
+   *     responses:
+   *       201:
+   *         description: The created user
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 id:
+   *                   type: string
+   *                 name:
+   *                   type: string
+   */
   @routeConfig({
     method: METHOD.POST,
     path: "/user",
@@ -110,15 +180,10 @@ class UserController {
         .input("companyId", companyId)
         .input("role", role)
         .query(
-          `INSERT INTO [User] (name, email, password, companyId, role) VALUES (@name, @email, @password, @companyId, @role)`
+          `INSERT INTO [User] (name, email, password, companyId, role) OUTPUT inserted.* VALUES (@name, @email, @password, @companyId, @role)`
         );
 
-      const userCreated = await pool
-        .request()
-        .input("email", email)
-        .query("SELECT * FROM [User] WHERE email = @email");
-
-      if (userCreated.rowsAffected[0] === 0) {
+      if (newUser.recordset.length === 0) {
         return ErrorHandler.Unauthorized(
           "Error creating user",
           "Error creating user",
@@ -126,10 +191,10 @@ class UserController {
         );
       }
 
-      res.json({
+      res.status(201).json({
         user: {
-          id: userCreated.recordset[0].id,
-          name: userCreated.recordset[0].name,
+          id: newUser.recordset[0].id,
+          name: newUser.recordset[0].name,
         },
       });
     } catch (error) {
@@ -143,6 +208,40 @@ class UserController {
     }
   }
 
+  /**
+   * @swagger
+   * /user/{id}:
+   *   put:
+   *     summary: Update an existing user
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: The user ID
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             properties:
+   *               name:
+   *                 type: string
+   *               password:
+   *                 type: string
+   *     responses:
+   *       200:
+   *         description: The updated user
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 message:
+   *                   type: string
+   */
   @routeConfig({
     method: METHOD.PUT,
     path: "/user/:id?",
@@ -193,6 +292,22 @@ class UserController {
     }
   }
 
+  /**
+   * @swagger
+   * /user:
+   *   delete:
+   *     summary: Delete the authenticated user
+   *     responses:
+   *       200:
+   *         description: The deleted user
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 message:
+   *                   type: string
+   */
   @routeConfig({
     method: METHOD.DELETE,
     path: "/user",

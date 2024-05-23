@@ -11,6 +11,38 @@ import * as jwt from "jsonwebtoken";
 const CONTROLLER_MICROSSSERVICE_ID = 1;
 
 class SessionController {
+  /**
+   * @swagger
+   * /login:
+   *   post:
+   *     summary: Log in a user
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             properties:
+   *               email:
+   *                 type: string
+   *               password:
+   *                 type: string
+   *             required:
+   *               - email
+   *               - password
+   *     responses:
+   *       200:
+   *         description: Successful login
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 token:
+   *                   type: string
+   *       401:
+   *         description: Unauthorized
+   */
   @routeConfig({
     method: METHOD.POST,
     path: "/login",
