@@ -306,6 +306,10 @@ IF OBJECT_ID('trg_after_delete_drone_has_parts', 'TR') IS NOT NULL
     DROP TRIGGER trg_after_delete_drone_has_parts;
 GO
 
+IF OBJECT_ID('trg_user_projects_alocatedTime_check', 'TR') IS NOT NULL
+    DROP TRIGGER trg_user_projects_alocatedTime_check;
+GO
+
 
 
 CREATE TRIGGER trg_instead_of_insert_drone_has_parts
@@ -361,5 +365,49 @@ BEGIN
     FROM drone_parts dp
     INNER JOIN deleted d ON dp.id = d.partId
     WHERE dp.id = d.partId;
+END;
+GO
+
+CREATE TRIGGER trg_user_projects_alocatedTime_check
+ON user_projects
+INSTEAD OF INSERT, UPDATE
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF EXISTS (SELECT * FROM inserted)
+    BEGIN
+        IF EXISTS (
+            SELECT 1
+            FROM inserted
+            WHERE role = 'responsible' AND alocatedTime < 35
+        )
+        BEGIN
+            RAISERROR ('Usuários com o papel de "responsible" devem ter no mínimo 35 de alocatedTime.', 16, 1);
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+
+        IF EXISTS (
+            SELECT 1
+            FROM inserted i
+            JOIN (
+                SELECT userId, SUM(alocatedTime) AS totalAllocatedTime
+                FROM user_projects
+                WHERE userId IN (SELECT userId FROM inserted)
+                GROUP BY userId
+            ) AS up ON i.userId = up.userId
+            WHERE up.totalAllocatedTime + i.alocatedTime > 100
+        )
+        BEGIN
+            RAISERROR ('A soma de alocatedTime para um usuário não pode exceder 100.', 16, 1);
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+
+        INSERT INTO user_projects (id, userId, projectId, role, alocatedTime)
+        SELECT id, userId, projectId, role, alocatedTime
+        FROM inserted;
+    END
 END;
 GO
