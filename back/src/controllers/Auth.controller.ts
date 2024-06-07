@@ -217,6 +217,45 @@ class AuthController {
       await pool.close();
     }
   }
+
+  /**
+   * @swagger
+   * /auth/verify:
+   *   get:
+   *     summary: Verify JWT token from cookies
+   *     responses:
+   *       200:
+   *         description: Valid token
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 message:
+   *                   type: string
+   *       401:
+   *         description: Unauthorized
+   */
+  @routeConfig({
+    method: METHOD.GET,
+    path: "/auth/verify",
+    id: CONTROLLER_MICROSSSERVICE_ID,
+  })
+  @Public()
+  public async verifyToken({ req, res, next }: RequestParams): Promise<any> {
+    const token = req.cookies.authorization;
+
+    if (!token) {
+      return ErrorHandler.Unauthorized("Invalid token", "Invalid token", next);
+    }
+
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_TOKEN);
+      res.json({ message: "Valid token", user: decoded });
+    } catch (error) {
+      return ErrorHandler.Unauthorized("Invalid token", "Invalid token", next);
+    }
+  }
 }
 
 export default AuthController;

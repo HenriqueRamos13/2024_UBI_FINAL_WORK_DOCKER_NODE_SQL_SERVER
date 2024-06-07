@@ -385,6 +385,84 @@ class DroneController {
       await pool.close();
     }
   }
+
+  /**
+   * @swagger
+   * /drone/finished-count:
+   *   get:
+   *     summary: Retrieve the count of finished and not finished drones
+   *     responses:
+   *       200:
+   *         description: The count of finished and not finished drones
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 finished:
+   *                   type: integer
+   *                 notFinished:
+   *                   type: integer
+   */
+  @routeConfig({
+    method: METHOD.GET,
+    path: "/drone/finished-count",
+    id: CONTROLLER_MICROSSERVICE_ID,
+  })
+  @Roles()
+  public async getFinishedCount({
+    req,
+    res,
+    next,
+    user,
+  }: RequestParams): Promise<void> {
+    const { companyId } = user;
+    const pool = await DB();
+
+    try {
+      console.log("Starting query for finished count");
+      console.log("User companyId:", companyId);
+
+      const finishedCountResult = await pool
+        .request()
+        .input("companyId", companyId)
+        .query(
+          `SELECT 
+             SUM(CASE WHEN finish = 1 THEN 1 ELSE 0 END) AS finished,
+             SUM(CASE WHEN finish = 0 THEN 1 ELSE 0 END) AS notFinished
+           FROM drone
+           WHERE companyId = @companyId`
+        );
+
+      console.log("Query result:", finishedCountResult);
+
+      if (finishedCountResult.recordset.length === 0) {
+        console.error("No records found");
+        return ErrorHandler.Unauthorized(
+          "No records found",
+          "No records found",
+          next
+        );
+      }
+
+      const { finished, notFinished } = finishedCountResult.recordset[0];
+      res.json({ finished, notFinished });
+    } catch (error) {
+      console.error("Error during query execution:", error);
+      return ErrorHandler.Unauthorized(
+        "Error fetching finished count",
+        "Error fetching finished count",
+        next
+      );
+    } finally {
+      try {
+        await pool.close();
+        console.log("Database connection closed");
+      } catch (closeError) {
+        console.error("Error closing the database connection:", closeError);
+      }
+    }
+  }
 }
 
 export default DroneController;

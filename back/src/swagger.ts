@@ -6,24 +6,6 @@ import TestController from "./controllers/Test.controller";
 import AuthController from "./controllers/Auth.controller";
 import UserController from "./controllers/User.controller";
 import UserProjectsController from "./controllers/UserProjects.controller";
-import ProjectController from "./controllers/Project.controller";
-import ProjectInfosController from "./controllers/ProjectInfos.controller";
-import ProjectInfoController from "./controllers/ProjectInfo.controller";
-import ProjectKeywordsController from "./controllers/ProjectKeywords.controller";
-import KeywordsController from "./controllers/Keywords.controller";
-import ProjectScientificDomainsController from "./controllers/ProjectScientificDomains.controller";
-import ScientificDomainController from "./controllers/ScientificDomain.controller";
-import ProjectScientificAreasController from "./controllers/ProjectScientificAreas.controller";
-import ScientificAreaController from "./controllers/ScientificArea.controller";
-import EntityController from "./controllers/Entity.controller";
-import EntityContactPointsController from "./controllers/EntityContactPoints.controller";
-import ContactPointController from "./controllers/ContactPoint.controller";
-import ContactPointInfoController from "./controllers/ContactPointInfo.controller";
-import FundingController from "./controllers/Funding.controller";
-import EntityFundingsController from "./controllers/EntityFundings.controller";
-import ProgramController from "./controllers/Program.controller";
-import ProgramsFundingsController from "./controllers/ProgramsFundings.controller";
-import ProjectFundingsController from "./controllers/ProjectFundings.controller";
 import DroneController from "./controllers/Drone.controller";
 import DronePartsController from "./controllers/DroneParts.controller";
 import DroneHasPartsController from "./controllers/DroneHasParts.controller";
@@ -58,24 +40,6 @@ function generateSwaggerDocFromRoutes(app: Express) {
     AuthController,
     UserController,
     UserProjectsController,
-    ProjectController,
-    ProjectInfosController,
-    ProjectInfoController,
-    ProjectKeywordsController,
-    KeywordsController,
-    ProjectScientificDomainsController,
-    ScientificDomainController,
-    ProjectScientificAreasController,
-    ScientificAreaController,
-    EntityController,
-    EntityContactPointsController,
-    ContactPointController,
-    ContactPointInfoController,
-    FundingController,
-    EntityFundingsController,
-    ProgramController,
-    ProgramsFundingsController,
-    ProjectFundingsController,
     DroneController,
     DronePartsController,
     DroneHasPartsController,
